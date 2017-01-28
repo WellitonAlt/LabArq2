@@ -3,10 +3,10 @@ INCLUDE Irvine32.inc
 .data
  AviaoX BYTE 2
  AviaoY BYTE 2
- Aviao0 BYTE 254, 254, 32 ,254, 254, 254
- Aviao1 BYTE 254, 254, 32, 254, 32, 254, 32, 254
- Aviao2 BYTE 32, 254, 254, 254, 254, 254, 254, 254
- Aviao3 BYTE 32, 32, 32, 32, 32, 254, 32, 254
+ Aviao BYTE 254, 254, 32 ,254, 254, 254, 32, 32 ,32,
+			254, 254, 32, 254, 32, 254, 32, 254, 32,
+			32, 254, 254, 254, 254, 254, 254, 254, 32,
+			32, 32, 32, 32, 32, 254, 32, 254, 32
  .code
 
 Desenha_Aviao PROC
@@ -15,43 +15,21 @@ Desenha_Aviao PROC
 	mov dh, AviaoY
 	call GotoXY
 
-	mov ecx, LENGTHOF Aviao0
-	mov esi, OFFSET Aviao0
-L0:
-	mov al, [ESI]
-	call WriteChar
-	inc ESI
-	LOOP l0
+	mov ecx, 4
+	mov esi, OFFSET Aviao
 
+Linha: 	
+	PUSH ecx
+	mov ecx, 9
+	Coluna:
+		mov al, [ESI]
+		call WriteChar
+		inc ESI
+	LOOP Coluna
+	POP ecx
 	inc dh
-	call GotoXY
-	mov ecx, LENGTHOF Aviao1
-	mov esi, OFFSET Aviao1
-L1:
-	mov al, [ESI]
-	call WriteChar
-	inc ESI
-	LOOP l1
-	
-	inc dh
-	call GotoXY
-	mov ecx, LENGTHOF Aviao2
-	mov esi, OFFSET Aviao2
-L2:
-	mov al, [ESI]
-	call WriteChar
-	inc ESI
-	LOOP l2
-
-	inc dh
-	call GotoXY
-	mov ecx, LENGTHOF Aviao3
-	mov esi, OFFSET Aviao3
-L3:
-	mov al, [ESI]
-	call WriteChar
-	inc ESI
-	LOOP l3
+	call GotoXY	
+LOOP Linha
 	
 	ret
 Desenha_Aviao ENDP
@@ -73,7 +51,7 @@ Linha:
 	POP ecx
 	inc dh
     call GotoXY
-	LOOP Linha
+LOOP Linha
 	
 	ret
 Apaga_Aviao ENDP
@@ -101,7 +79,6 @@ Setas:
 
     cmp dx,VK_ESCAPE
     jne Setas  
-
 
 	exit
 main ENDP

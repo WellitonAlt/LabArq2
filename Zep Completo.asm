@@ -9,10 +9,11 @@ INCLUDE Irvine32.inc
  Fila0 BYTE 0, 0, 0, 0, 0
  Fila1 BYTE 0, 0, 0, 0, 0
  Fila2 BYTE 0, 0, 0, 0, 0
- Zep0 BYTE 32, 254, 254 ,254, 254, 254, 254, 254
- Zep1 BYTE 254, 254, 254, 254, 254, 254, 254, 254, 254 
- Zep2 BYTE 32, 254, 32 ,254, 32, 254
- Zep3 BYTE 32, 254, 254, 254, 254, 254
+ Zep BYTE  32, 254, 254 ,254, 254, 254, 254, 254,  32,
+		  254, 254, 254, 254, 254, 254, 254, 254, 254,
+		  254, 254, 254, 254, 254, 254, 254, 254, 254,
+		   32, 254,  32, 254,  32, 254,  32, 254,  32,
+		   32,  32, 254, 254, 254, 254, 254,  32,  32
  
  .code
 
@@ -20,6 +21,7 @@ Gera_Zep PROC
 	call Randomize
 	mov  eax, 3 
     call RandomRange 
+  
     .IF eax == 0
 	    mov Fila0[4], 0
 		mov Fila1[4], 2
@@ -33,20 +35,36 @@ Gera_Zep PROC
 		mov Fila1[4], 2
 		mov Fila2[4], 0
 	.ENDIF
-	
+		
 	ret		
 Gera_Zep ENDP
 
 Move_ZEP PROC
-
-	mov ecx, 4
-	mov ebx, 0
+    call Gera_Zep
 	
-L1:	
+	mov ecx, 4
+	mov ebx, 0	
+L0:	
 	mov al, Fila0[ebx + 1]
 	mov Fila0[ebx], al	
 	inc ebx
-	Loop L1
+LOOP L0
+
+	mov ecx, 4
+	mov ebx, 0	
+L1:	
+	mov al, Fila1[ebx + 1]
+	mov Fila1[ebx], al	
+	inc ebx
+LOOP L1
+
+	mov ecx, 4
+	mov ebx, 0	
+L2:	
+	mov al, Fila2[ebx + 1]
+	mov Fila2[ebx], al	
+	inc ebx
+LOOP L2
 
 	call Gera_Zep
 	ret
@@ -56,7 +74,7 @@ Escreve_Fila PROC
 	mov ecx, 4
 	mov ebx, 0
 
-L1:
+L0:
 	push ecx
 	mov al, Fila0[ebx]
 	.IF al == 2
@@ -64,17 +82,50 @@ L1:
 	.ELSEIF al == 0
 		call Apaga_Zep
 	.ENDIF
-	pop ecx	
-	
-	add ZepX, 10
+	pop ecx		
+	add ZepX, 20
 	inc ebx
-	Loop L1
+LOOP L0
+
+	mov ZepX, 2
+	add ZepY, 6
+	mov ecx, 4
+	mov ebx, 0
+
+L1:
+	push ecx
+	mov al, Fila1[ebx]
+	.IF al == 2
+		call Desenha_Zep
+	.ELSEIF al == 0
+		call Apaga_Zep
+	.ENDIF
+	pop ecx		
+	add ZepX, 20
+	inc ebx
+LOOP L1
+
+	mov ZepX, 2
+	add ZepY, 6
+	mov ecx, 4
+	mov ebx, 0
+
+L2:
+	push ecx
+	mov al, Fila2[ebx]
+	.IF al == 2
+		call Desenha_Zep
+	.ELSEIF al == 0
+		call Apaga_Zep
+	.ENDIF
+	pop ecx		
+	add ZepX, 20
+	inc ebx
+LOOP L2
 
 	mov ZepX, 2
 	mov ZepY, 2
-
-	call Crlf 
-		
+ 		
 	ret
 Escreve_Fila ENDP
 
@@ -84,43 +135,20 @@ Desenha_Zep PROC
 	mov dh, ZepY
 	call GotoXY
 
-	mov ecx, LENGTHOF Zep0
-	mov esi, OFFSET Zep0
-L0:
-	mov al, [ESI]
-	call WriteChar
-	inc ESI
-	LOOP L0
-
+	mov esi, OFFSET Zep
+	mov ecx, 5
+Linha:
+	push ecx
+	mov ecx, 9
+	Coluna:
+		mov al, [ESI]
+		call WriteChar
+		inc ESI
+	LOOP Coluna
+	pop ecx
 	inc dh
 	call GotoXY
-	mov ecx, LENGTHOF Zep1
-	mov esi, OFFSET Zep1
-L1:
-	mov al, [ESI]
-	call WriteChar
-	inc ESI
-	LOOP L1
-	
-	inc dh
-	call GotoXY
-	mov ecx, LENGTHOF Zep2
-	mov esi, OFFSET Zep2
-L2:
-	mov al, [ESI]
-	call WriteChar
-	inc ESI
-	LOOP L2
-
-	inc dh
-	call GotoXY
-	mov ecx, LENGTHOF Zep3
-	mov esi, OFFSET Zep3
-L3:
-	mov al, [ESI]
-	call WriteChar
-	inc ESI
-	LOOP L3
+LOOP Linha
 
 	ret
 Desenha_Zep ENDP
@@ -138,18 +166,14 @@ Linha:
 	mov ecx, 9
 	Coluna:
 		call WriteChar
-		LOOP Coluna
+	LOOP Coluna
 	POP ecx
 	inc dh
     call GotoXY
-	LOOP Linha
+LOOP Linha
 	
 	ret
 Apaga_Zep ENDP
-
-
-
-
 
 main PROC	
     INVOKE GetStdHandle,STD_OUTPUT_HANDLE 
@@ -157,14 +181,11 @@ main PROC
 
 	INVOKE SetConsoleScreenBufferSize, 
 	outHandle,scrSize 
-	call Gera_Zep
-
-L1:
-	
+L1:	
+	;call Gera_Zep
 	call Move_Zep
-	call Escreve_Fila
-		
-	mov eax, 300
+	call Escreve_Fila		
+	mov eax, 500
 	call Delay
 	jmp L1
 
