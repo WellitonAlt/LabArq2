@@ -5,20 +5,22 @@ INCLUDE Irvine32.inc
  scrSize COORD <120,50> 
 
  Ctrl BYTE 0
+ Tempo DWORD ?
 
  Fila0 BYTE 0, 0, 0, 0, 0, 0, 0, 0
  Fila1 BYTE 1, 0, 0, 0, 0, 0, 0, 0
  Fila2 BYTE 0, 0, 0, 0, 0, 0, 0, 0
 
- ZepX BYTE 2
- ZepY BYTE 2
+ ZepX BYTE 4
+ ZepY BYTE 4
  Zep BYTE  32, 254, 254 ,254, 254, 254, 254, 254,  32,
 		  254, 254, 254, 254, 254, 254, 254, 254, 254,
 		  254, 254, 254, 254, 254, 254, 254, 254, 254,
 		   32, 254,  32, 254,  32, 254,  32, 254,  32,
 		   32,  32, 254, 254, 254, 254, 254,  32,  32 
- AviaoX BYTE 2
- AviaoY BYTE 8
+
+ AviaoX BYTE 4
+ AviaoY BYTE 10
  Aviao BYTE 254, 254,  32 ,254, 254, 254,  32,  32, 32,
 			254, 254,  32, 254,  32, 254,  32, 254, 32,
 			 32, 254, 254, 254, 254, 254, 254, 254, 32,
@@ -61,18 +63,20 @@ Gera_Zep ENDP
 
 Move_Aviao PROC
 
-	.IF AviaoY == 2
+	.IF AviaoY == 4 && Fila0[0] == 0
 		mov Fila0[0], 1
 		mov Fila1[0], 0
 		mov Fila2[0], 0
-	.ELSEIF AviaoY == 8
+	.ELSEIF AviaoY == 10 && Fila1[0] == 0
 	    mov Fila0[0], 0
 		mov Fila1[0], 1
 		mov Fila2[0], 0
-	.ELSEIF AviaoY == 14	
+	.ELSEIF AviaoY == 16 && Fila2[0] == 0	
 		mov Fila0[0], 0
 		mov Fila1[0], 0
 		mov Fila2[0], 1
+	.ELSE
+		call Colisao
 	.ENDIF
 
 	ret
@@ -144,7 +148,7 @@ L0:
 LOOP L0
 
 	;call Crlf
-	mov ZepX, 2
+	mov ZepX, 4
 	add ZepY, 6
 	mov ecx, 7
 	mov ebx, 0
@@ -167,7 +171,7 @@ L1:
 LOOP L1
 	
 	;call Crlf
-	mov ZepX, 2
+	mov ZepX, 4
 	add ZepY, 6
 	mov ecx, 7
 	mov ebx, 0
@@ -190,8 +194,8 @@ L2:
 LOOP L2
     
 	;call Crlf
-	mov ZepX, 2
-	mov ZepY, 2
+	mov ZepX, 4
+	mov ZepY, 4
  		
 	ret
 Escreve_Fila ENDP
@@ -273,7 +277,7 @@ Apaga_Aviao PROC
 	mov dh, AviaoY
 	call GotoXY
 	
-	mov ecx, 4
+	mov ecx, 5
 	mov al, 32
 Linha:
 	PUSH ecx
@@ -304,31 +308,31 @@ main PROC
 	call Escreve_Fila
 
 	call GetMseconds
-	mov ebx,eax
+	mov Tempo,eax
 
 Setas:
     mov  eax,50          
     call Delay        
 	call ReadKey        
 	    	
-    .IF ah == 48h		
+    .IF ah == 48h && AviaoY != 4		
 		call Apaga_Aviao
 		sub AviaoY, 6
 		call Move_Aviao
 		call Desenha_Aviao		
-	.ELSEIF ah == 50h
+	.ELSEIF ah == 50h && AviaoY != 16
 	    call Apaga_Aviao
 		add AviaoY, 6
-		call Move_Aviao         
-    call Delay 	
+		call Move_Aviao
+		call Desenha_Aviao	          	
 	.ENDIF
 
 	call GetMseconds
-	sub eax, ebx
+	sub eax, Tempo
 	.IF eax > 500
 	   call Move_Zep
 	   call GetMseconds
-	   mov ebx, eax
+	   mov Tempo, eax
 	.ENDIF
 
     cmp dx,VK_ESCAPE
