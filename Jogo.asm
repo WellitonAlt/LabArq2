@@ -213,6 +213,8 @@ Linha:
 	PUSH ecx
 	mov ecx, 9
 	Coluna:
+		mov  eax,red
+		call SetTextColor
 		mov al, [ESI]
 		call WriteChar
 		inc ESI
@@ -237,6 +239,8 @@ Linha:
 	push ecx
 	mov ecx, 9
 	Coluna:
+		mov  eax,green
+		call SetTextColor
 		mov al, [ESI]
 		call WriteChar
 		inc ESI
